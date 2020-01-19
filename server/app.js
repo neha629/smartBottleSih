@@ -13,6 +13,8 @@ var io = require('socket.io')(server, { origins: '*:*'});
 // import webpackHotMiddleware from 'webpack-hot-middleware';
 // import webpackConfig from '../webpack/webpack.config.dev';
 import sckt from './sckt';
+import { EVENTS } from './nodesManager';
+import eventBus from './eventBus';
 
 // if (process.env.NODE_ENV === 'development') {
 //     const compiler = webpack(webpackConfig);
@@ -24,8 +26,6 @@ import sckt from './sckt';
 
 // Router
 // app.use('/api', routes);
-
-// Landing page
 
 var patient = [
   [
@@ -143,9 +143,13 @@ var patient = [
 ]
 
 
-
+// Landing page
 app.get('/', (req, res) => {
   res.render('contents/home');
+});
+
+app.get('/apic', (req, res) => {
+  res.send('a');
 });
 
 app.get("/wardno\*", function(req, res){
@@ -193,9 +197,9 @@ io.on('connection', function (socket) {
         sendSckt('c');
       }
 
-      io.emit('btnclick', { server: 1, ...data });
-    // socket.broadcast.emit('btnclick', { serevr: 1, ...data });
-  });
+      io.emit('btnclick',  { server: 1, ...data });
+
+    });
 
   socket.on('checkstatus', function (data) {
     console.log(data);  
@@ -208,8 +212,15 @@ io.on('connection', function (socket) {
       info
     });
   });
-
+  eventBus.on(EVENTS.NEWCONNECT, function (ip) {
+    console.log('new node connnected', ip);
+    io.emit('newconnect', {
+      ip
+    });    
+  });
+  
 });
+
 
 var ip = require("ip");
 var a = ip.address();
